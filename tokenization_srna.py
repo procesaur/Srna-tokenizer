@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tokenization classes for Serbian and Serbo-Croatian models."""
-from transformers import PreTrainedTokenizer # 
+from transformers import PreTrainedTokenizerFast # 
 from tokenizers import Regex, Tokenizer, decoders, normalizers, pre_tokenizers
 from tokenizers.models import BPE
 
@@ -46,7 +46,7 @@ def lat2cyr(text: str) -> str:
     return "".join({v: k for k, v in mapping.items()}.get(ch, ch) for ch in text)
 
 
-class SrnaTokenizer(PreTrainedTokenizer): # 
+class SrnaTokenizer(PreTrainedTokenizerFast): # 
     model_input_names = ["input_ids", "attention_mask"]
     model = BPE
 

@@ -1,6 +1,7 @@
-from transformers import AutoTokenizer
+from tokenization_srna import SrnaTokenizer
+# from transformers import AutoTokenizer
 
-tokenizer = AutoTokenizer.from_pretrained("procesaur/Srna_test", trust_remote_code=True)
+tokenizer = SrnaTokenizer.from_pretrained("procesaur/Srna_test", trust_remote_code=True)
 
 text = "Hello world, this is a test."
 
