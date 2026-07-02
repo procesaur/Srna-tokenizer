@@ -2,8 +2,8 @@ from tokenization_srna import SrnaTokenizer
 # from transformers import AutoTokenizer
 
 tokenizer = SrnaTokenizer.from_pretrained("procesaur/Srna_test", trust_remote_code=True)
-
-text = "Hello world, this is a test."
+#tokenizer.omit_tags=True
+text = "Pitao sam se 'да ли ће ме и рођени дјед и оџак надживети'?"
 
 # Tokenize and print tokens
 tokens = tokenizer.tokenize(text)
