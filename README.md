@@ -1,5 +1,5 @@
 ---
-license: cc-by-4.0
+license: apache-2.0
 language:
 - sr
 ---
