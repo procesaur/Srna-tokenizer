@@ -56,7 +56,12 @@ language:
 from transformers import AutoTokenizer
 
 tokenizer = AutoTokenizer.from_pretrained("procesaur/Srna_tokenizer", trust_remote_code=True)
+
+# Options
+#tokenizer.case_compression=False
+#tokenizer.script_compression=False
 #tokenizer.omit_tags=True
+
 text = "Pitao sam se 'да ли ће ме и рођени дјед и оџак надживети'?"
 
 # Tokenize and print tokens
@@ -72,7 +77,7 @@ print(text==decoded)
 ```
 
 ```python
-['<capi>', 'pita', 'o', 'Ġsam', 'Ġse', "Ġ'", '<csta>', 'da', 'Ġli', 'ĠÄĩe', 'Ġme', 'Ġi', 'ĠroÄĳeni', 'Ġdje', 'd', 'Ġnad', 'Å¾i', 'veti', "'", '?', '<cend>']
+['<capi>', 'pita', 'o', 'Ġsam', 'Ġse', "Ġ'", '<csta>', 'da', 'Ġli', 'ĠÄĩe', 'Ġme', 'Ġi', 'ĠroÄĳeni', 'Ġdje', 'd', 'Ġnad', 'Å¾i', 'veti', "'", '?']
 "Pitao sam se 'да ли ће ме и рођени дјед и оџак надживети'?"
 True
 ```
