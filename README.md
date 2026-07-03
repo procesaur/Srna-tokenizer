@@ -77,7 +77,7 @@ print(text==decoded)
 ```
 
 ```python
-['<capi>', 'pita', 'o', 'Ġsam', 'Ġse', "Ġ'", '<csta>', 'da', 'Ġli', 'ĠÄĩe', 'Ġme', 'Ġi', 'ĠroÄĳeni', 'Ġdje', 'd', 'Ġnad', 'Å¾i', 'veti', "'", '?']
+['<capi>', 'pita', 'o', 'Ġsam', 'Ġse', "Ġ'", '<csta>', 'da', 'Ġli', 'ĠÄĩe', 'Ġme', 'Ġi', 'ĠroÄĳeni', 'Ġdje', 'd', 'Ġi', 'Ġod', 'Å¾ak', 'Ġnad', 'Å¾i', 'veti', "'", '?']
 "Pitao sam se 'да ли ће ме и рођени дјед и оџак надживети'?"
 True
 ```
