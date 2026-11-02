@@ -155,10 +155,10 @@ class SrnaTokenizer(PreTrainedTokenizerFast): #
         eos_token: str = "<|endoftext|>",
         pad_token: str = "<|endoftext|>",
         add_prefix_space=None,
-        boc_token = "<|cyr_start|>",
-        eoc_token = "<|cyr_end|>",
-        cap_token = "<|cap|>",
-        up_token = "<|up|>",
+        boc_token = "<csta>",
+        eoc_token = "<cend>",
+        cap_token = "<capi>",
+        up_token = "<uppe>",
         case_compression = True,
         script_compression = True,
         omit_tags = False,
@@ -190,8 +190,7 @@ class SrnaTokenizer(PreTrainedTokenizerFast): #
         self.UPPER_REGEX = r"\s?\b\p{Lu}{2,}\b"
         self.UP_FIND = rf"{regex.escape(self.up_token)}(\s?\w+)"
         self.CAP_FIND = rf"{regex.escape(self.cap_token)}(\s?\w+)"
-        self.CYR_FIND = rf"{regex.escape(self.boc_token)}(.*?)({regex.escape(self.eoc_token)}|$)"
-
+        self.CYR_FIND = rf"{regex.escape(self.boc_token)}([\s\S]*?)({regex.escape(self.eoc_token)}|$)"
         self._merges = merges or []
         self._tokenizer = Tokenizer(
             BPE(
@@ -232,7 +231,16 @@ class SrnaTokenizer(PreTrainedTokenizerFast): #
             **kwargs,
         )
     
-    def prepare_for_tokenization(self, text: str, is_split_into_words=False, **kwargs):
+    def prepare_for_tokenization(self, text, is_split_into_words=False, **kwargs):
+        # Handle None or non-string types gracefully
+        if text is None:
+            return ""
+        if isinstance(text, list):
+            # If a list is passed, recursively process each element
+            return [self.prepare_for_tokenization(t, is_split_into_words=is_split_into_words, **kwargs) for t in text]
+        if not isinstance(text, str):
+            text = str(text)
+
         def mark_cap(match):
             if self.omit_tags:
                 return match.group(0).lower()
@@ -265,43 +273,64 @@ class SrnaTokenizer(PreTrainedTokenizerFast): #
         return super().encode(text, *args, **kwargs)
 
     def _encode_plus(self, text, *args, **kwargs):
-        if self.add_prefix_space:
+        if text is None:
+            text = ""
+        elif isinstance(text, list):
+            text = [str(t) if t is not None else "" for t in text]
+        elif not isinstance(text, str):
+            text = str(text)
+
+        if isinstance(text, str) and self.add_prefix_space:
             text = text.lstrip("\n\t")
             if not text.startswith(" "):
                 text = " " + text
-        # apply your preprocessing hook
+                
+        # apply preprocessing hook safely
         text = self.prepare_for_tokenization(text, **kwargs)
         return super()._encode_plus(text, *args, **kwargs)
 
 
     def decode(self, token_ids, *args, **kwargs):
         text = super().decode(token_ids, *args, **kwargs)
-        # then your custom tag decoding
 
-        def decode_cyr(match):
-            return lat2cyr(match.group(1))
+        # Helper function to apply regex decoding logic to a single string safely
+        def _decode_text_string(s: str) -> str:
+            if not isinstance(s, str):
+                s = str(s) if s is not None else ""
 
-        def decode_cap(match):
-            inner = match.group(1)
-            leading_ws = regex.match(r"^\s*", inner).group(0)
-            if not leading_ws:
-                return inner[0].upper() + inner[1:]
+            def decode_cyr(match):
+                return lat2cyr(match.group(1))
 
-            core = inner.lstrip()
-            if core:
-                core = core[0].upper() + core[1:]
-            return leading_ws + core
+            def decode_cap(match):
+                inner = match.group(1)
+                if not inner:
+                    return inner
+                
+                ws_match = regex.match(r"^\s*", inner)
+                leading_ws = ws_match.group(0) if ws_match else ""
+                
+                if not leading_ws:
+                    return inner[0].upper() + inner[1:] if len(inner) > 0 else inner
 
-        def decode_allcaps(match):
-            inner = match.group(1)
-            return inner.upper()
-   
-        if self.case_compression:
-            text = regex.sub(self.UP_FIND, decode_allcaps, text)
-            text = regex.sub(self.CAP_FIND, decode_cap, text)
-        if self.script_compression:
-            text = regex.sub(self.CYR_FIND, decode_cyr, text)
-        return text
+                core = inner.lstrip()
+                if core:
+                    core = core[0].upper() + core[1:]
+                return leading_ws + core
+
+            def decode_allcaps(match):
+                return match.group(1).upper()
+
+            if self.case_compression:
+                s = regex.sub(self.UP_FIND, decode_allcaps, s)
+                s = regex.sub(self.CAP_FIND, decode_cap, s)
+            if self.script_compression:
+                s = regex.sub(self.CYR_FIND, decode_cyr, s)
+            return s
+
+        # Safely process both single strings and list/batch returns
+        if isinstance(text, list):
+            return [_decode_text_string(t) for t in text]
+        return _decode_text_string(text)
 
 
 __all__ = ["SrnaTokenizer"]
